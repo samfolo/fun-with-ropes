@@ -1,24 +1,27 @@
-use std::sync::Arc;
+use std::{
+    str::FromStr,
+    sync::{Arc, Weak},
+};
 
-pub struct Node<'a> {
-    parent: Option<Arc<Node<'a>>>,
-    body: Body<'a>,
+pub struct Node {
+    parent: Option<Weak<Node>>,
+    body: Body,
 }
 
-pub enum Body<'a> {
+pub enum Body {
     Internal {
-        left: Arc<Node<'a>>,
-        right: Arc<Node<'a>>,
+        left: Arc<Node>,
+        right: Arc<Node>,
         weight: usize,
     },
-    Leaf(&'a str),
+    Leaf(String),
 }
 
-impl<'a> Node<'a> {
+impl Node {
     pub fn new() -> Self {
         Self {
             parent: None,
-            body: Body::Leaf(""),
+            body: Body::Leaf("".into()),
         }
     }
 
@@ -27,5 +30,20 @@ impl<'a> Node<'a> {
             Body::Internal { weight, right, .. } => weight + right.len(),
             Body::Leaf(substr) => substr.len(),
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
+impl FromStr for Node {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            parent: None,
+            body: Body::Leaf(s.into()),
+        })
     }
 }
