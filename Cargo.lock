@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "fun-with-ropes"
+name = "my_first_rope"
 version = "0.1.0"
