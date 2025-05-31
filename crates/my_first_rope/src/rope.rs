@@ -12,4 +12,20 @@ impl Rope<'_> {
             root: Arc::new(node::Node::new()),
         }
     }
+
+    pub fn len(&self) -> usize {
+        self.root.len()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_empty() -> anyhow::Result<()> {
+        let rope = Rope::new();
+        assert_eq!(rope.len(), 0);
+        Ok(())
+    }
 }

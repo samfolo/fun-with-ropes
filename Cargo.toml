@@ -2,3 +2,5 @@
 resolver = "3"
 members = ["crates/my_first_rope"]
 
+[workspace.dependencies]
+anyhow = {version = "1.0"}
