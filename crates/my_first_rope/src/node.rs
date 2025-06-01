@@ -1,4 +1,4 @@
-use std::{fmt::Display, str::FromStr, sync::Arc};
+use std::{cmp::Ordering, fmt::Display, str::FromStr, sync::Arc};
 
 #[derive(Debug)]
 pub enum Node {
@@ -33,6 +33,20 @@ impl Node {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
+    pub fn char_at(&self, index: usize) -> Option<char> {
+        match self {
+            Node::Leaf(substr) => substr.chars().nth(index),
+            Node::Internal {
+                left,
+                right,
+                weight,
+            } => match index.cmp(weight) {
+                Ordering::Less => left.char_at(index),
+                _ => right.char_at(index - weight),
+            },
+        }
+    }
 }
 
 impl FromStr for Node {
@@ -61,7 +75,7 @@ mod tests {
     use super::*;
 
     // --------------------------------------------
-    fn run_len(values: &[&str]) -> anyhow::Result<()> {
+    fn build_node(values: &[&str]) -> anyhow::Result<(Option<Node>, usize)> {
         assert!(!values.is_empty());
 
         let mut node = None;
@@ -79,7 +93,14 @@ mod tests {
             }
         }
 
+        Ok((node, len))
+    }
+
+    // --------------------------------------------
+    fn run_len(values: &[&str]) -> anyhow::Result<()> {
+        let (node, len) = build_node(values)?;
         assert_eq!(node.unwrap().len(), len);
+
         Ok(())
     }
 
@@ -91,6 +112,30 @@ mod tests {
         run_len(&["hello"])?;
         run_len(&["goodbye"])?;
         run_len(&["hello", "world", "goodbye", "mars"])?;
+
+        Ok(())
+    }
+
+    // --------------------------------------------
+    fn run_char_at(values: &[&str], index: usize, expected: Option<char>) -> anyhow::Result<()> {
+        let (node, _) = build_node(values)?;
+        assert_eq!(node.unwrap().char_at(index), expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_char_at() -> anyhow::Result<()> {
+        run_char_at(&["abc"], 0, Some('a'))?;
+        run_char_at(&["abc"], 2, Some('c'))?;
+        run_char_at(&["a", "b", "c"], 0, Some('a'))?;
+        run_char_at(&["a", "b", "c"], 2, Some('c'))?;
+        run_char_at(&["a", "bc"], 1, Some('b'))?;
+        run_char_at(&["a", "bc"], 2, Some('c'))?;
+        run_char_at(&["hello", "world", "goodbye", "mars"], 13, Some('d'))?;
+        run_char_at(&["hello", "", "goodbye", "mars"], 9, Some('b'))?;
+        run_char_at(&["", "", "goodbye", "", "mars"], 8, Some('a'))?;
+        run_char_at(&["hello", "", "world", ""], 6, Some('o'))?;
 
         Ok(())
     }

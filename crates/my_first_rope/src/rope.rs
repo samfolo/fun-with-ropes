@@ -32,6 +32,10 @@ impl Rope {
         let temp = node::Node::new_internal(left, right);
         self.root = Arc::new(temp);
     }
+
+    pub fn char_at(&self, index: usize) -> Option<char> {
+        self.root.char_at(index)
+    }
 }
 
 impl FromStr for Rope {
