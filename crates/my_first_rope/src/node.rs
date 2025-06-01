@@ -168,15 +168,35 @@ mod tests {
     }
 
     // --------------------------------------------
-    fn run_split_at(values: &[&str], index: usize, expected: (Node, Node)) -> anyhow::Result<()> {
+    fn run_leaf_split_at(
+        values: &[&str],
+        index: usize,
+        expected: (&str, &str),
+    ) -> anyhow::Result<()> {
         let (node, _) = build_node(values)?;
-        assert_eq!(node.unwrap().split_at(index), expected);
+        assert_eq!(
+            node.unwrap().split_at(index),
+            (expected.0.parse()?, expected.1.parse()?)
+        );
 
+        Ok(())
+    }
+
+    fn run_internal_split_at(
+        values: &[&str],
+        index: usize,
+        expected: (Node, Node),
+    ) -> anyhow::Result<()> {
         Ok(())
     }
 
     #[test]
     fn test_split_at() -> anyhow::Result<()> {
+        run_leaf_split_at(&["abc"], 1, ("a", "bc"))?;
+        run_leaf_split_at(&["0123456"], 3, ("012", "3456"))?;
+        run_leaf_split_at(&["hello world"], 4, ("hell", "o world"))?;
+
+        run_internal_split_at(&["abc"], 1, (Node::new(), Node::new()))?;
         Ok(())
     }
 }
