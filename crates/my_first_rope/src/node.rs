@@ -85,6 +85,9 @@ mod tests {
 
     #[test]
     fn test_len() -> anyhow::Result<()> {
+        run_len(&[""])?;
+        run_len(&["", "hello"])?;
+        run_len(&["", "hello", "", "world", ""])?;
         run_len(&["hello"])?;
         run_len(&["goodbye"])?;
         run_len(&["hello", "world", "goodbye", "mars"])?;
