@@ -128,6 +128,7 @@ mod tests {
     fn test_char_at() -> anyhow::Result<()> {
         run_char_at(&["abc"], 0, Some('a'))?;
         run_char_at(&["abc"], 2, Some('c'))?;
+        run_char_at(&["café"], 3, Some('é'))?;
         run_char_at(&["a", "b", "c"], 0, Some('a'))?;
         run_char_at(&["a", "b", "c"], 2, Some('c'))?;
         run_char_at(&["a", "bc"], 1, Some('b'))?;
