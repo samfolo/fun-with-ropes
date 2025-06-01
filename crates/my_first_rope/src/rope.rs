@@ -218,7 +218,28 @@ mod tests {
 
     #[test]
     fn test_split_at() -> anyhow::Result<()> {
+        run_split_at(&[&[""]], 0, ("", ""))?;
+        run_split_at(&[&[""]], 5, ("", ""))?;
         run_split_at(&[&["ab", "cd"], &["ef", "gh"]], 3, ("abc", "defgh"))?;
+        run_split_at(&[&["ab", "cd"], &["ef", "gh"]], 1, ("a", "bcdefgh"))?;
+        run_split_at(&[&["ab", "cd"], &["ef", "gh"]], 6, ("abcdef", "gh"))?;
+        run_split_at(&[&["ab", "cd"], &["ef", "gh"]], 7, ("abcdefg", "h"))?;
+        run_split_at(&[&["ab", "cd"], &["ef", "gh"]], 0, ("", "abcdefgh"))?;
+
+        let alphabet_tree: &[&[&str]] = &[
+            &["abc", "defg", "", "hi"],
+            &["", "j", "kl"],
+            &["mno", "p"],
+            &["qrst", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        run_split_at(alphabet_tree, 5, ("abcde", "fghijklmnopqrstuvwxyz"))?;
+        run_split_at(alphabet_tree, 7, ("abcdefg", "hijklmnopqrstuvwxyz"))?;
+        run_split_at(alphabet_tree, 16, ("abcdefghijklmnop", "qrstuvwxyz"))?;
+        run_split_at(alphabet_tree, 36, ("abcdefghijklmnopqrstuvwxyz", ""))?;
+        run_split_at(alphabet_tree, 0, ("", "abcdefghijklmnopqrstuvwxyz"))?;
 
         Ok(())
     }
