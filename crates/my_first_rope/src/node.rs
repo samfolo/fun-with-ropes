@@ -1,4 +1,5 @@
 use std::{
+    fmt::Display,
     str::FromStr,
     sync::{Arc, Weak},
 };
@@ -33,7 +34,10 @@ impl Node {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        match &self.body {
+            Body::Internal { weight, .. } => *weight == 0,
+            Body::Leaf(substr) => substr.is_empty(),
+        }
     }
 }
 
@@ -45,5 +49,18 @@ impl FromStr for Node {
             parent: None,
             body: Body::Leaf(s.into()),
         })
+    }
+}
+
+impl Display for Node {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.body {
+            Body::Internal { left, right, .. } => {
+                write!(f, "{}{}", left, right)
+            }
+            Body::Leaf(substr) => {
+                write!(f, "{substr}")
+            }
+        }
     }
 }
