@@ -37,7 +37,7 @@ impl Rope {
         self.root.char_at(index)
     }
 
-    pub fn split_at(&mut self, index: usize) -> (Rope, Rope) {
+    pub fn split_at(&self, index: usize) -> (Rope, Rope) {
         let (left, right) = self.root.split_at(index);
         (left.into(), right.into())
     }
@@ -64,6 +64,17 @@ impl FromStr for Rope {
 impl Display for Rope {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.root)
+    }
+}
+
+#[cfg(test)]
+impl TryFrom<&[&[&str]]> for Rope {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &[&[&str]]) -> Result<Self, Self::Error> {
+        Ok(Self {
+            root: Arc::new(value.try_into()?),
+        })
     }
 }
 
@@ -189,26 +200,26 @@ mod tests {
     }
 
     // --------------------------------------------
-    // fn run_split_at(
-    //     values: (&[&str], &[&str]),
-    //     index: usize,
-    //     expected: (&str, &str),
-    // ) -> anyhow::Result<()> {
-    //     let (node, _) = build_node(values)?;
-    //
-    //     let (left, right) = node.unwrap().split_at(index);
-    //     let (expected_left, expected_right) = expected;
-    //
-    //     assert_eq!(left.to_string(), expected_left.to_string());
-    //     assert_eq!(right.to_string(), expected_right.to_string());
-    //
-    //     Ok(())
-    // }
-    //
-    // #[test]
-    // fn test_split_at() -> anyhow::Result<()> {
-    //     run_split_at((&["ab", "cd"], &["ef", "gh"]), 3, ("abc", "defgh"))?;
-    //
-    //     Ok(())
-    // }
+    fn run_split_at(
+        values: &[&[&str]],
+        index: usize,
+        expected: (&str, &str),
+    ) -> anyhow::Result<()> {
+        let node: Rope = values.try_into()?;
+
+        let (left, right) = node.split_at(index);
+        let (expected_left, expected_right) = expected;
+
+        assert_eq!(left.to_string(), expected_left.to_string());
+        assert_eq!(right.to_string(), expected_right.to_string());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_split_at() -> anyhow::Result<()> {
+        run_split_at(&[&["ab", "cd"], &["ef", "gh"]], 3, ("abc", "defgh"))?;
+
+        Ok(())
+    }
 }
