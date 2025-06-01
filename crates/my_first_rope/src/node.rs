@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, fmt::Display, str::FromStr, sync::Arc};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Node {
     Internal {
         left: Arc<Node>,
@@ -63,9 +63,27 @@ impl Node {
                 let right = &substr[index..];
                 (left.parse().unwrap(), right.parse().unwrap())
             }
-            Node::Internal { left, right, .. } => {
-                //
-                (Self::new(), Self::new())
+            Node::Internal {
+                left,
+                right,
+                weight,
+            } => {
+                let left = Node::clone(left);
+                let right = Node::clone(right);
+
+                match index.cmp(weight) {
+                    Ordering::Less => {
+                        let (left_left, left_right) = left.split_at(index);
+                        let rest = Node::new_internal(Arc::new(left_right), Arc::new(right));
+                        (left_left, rest)
+                    }
+                    Ordering::Greater => {
+                        let (right_left, right_right) = right.split_at(index - weight);
+                        let rest = Node::new_internal(Arc::new(left), Arc::new(right_left));
+                        (rest, right_right)
+                    }
+                    Ordering::Equal => (left, right),
+                }
             }
         }
     }
@@ -168,35 +186,36 @@ mod tests {
     }
 
     // --------------------------------------------
-    fn run_leaf_split_at(
-        values: &[&str],
-        index: usize,
-        expected: (&str, &str),
-    ) -> anyhow::Result<()> {
+    fn run_split_at(values: &[&str], index: usize, expected: (&str, &str)) -> anyhow::Result<()> {
         let (node, _) = build_node(values)?;
-        assert_eq!(
-            node.unwrap().split_at(index),
-            (expected.0.parse()?, expected.1.parse()?)
-        );
 
-        Ok(())
-    }
+        let (left, right) = node.unwrap().split_at(index);
+        let (expected_left, expected_right) = expected;
 
-    fn run_internal_split_at(
-        values: &[&str],
-        index: usize,
-        expected: (Node, Node),
-    ) -> anyhow::Result<()> {
+        assert_eq!(left.to_string(), expected_left.to_string());
+        assert_eq!(right.to_string(), expected_right.to_string());
+
         Ok(())
     }
 
     #[test]
     fn test_split_at() -> anyhow::Result<()> {
-        run_leaf_split_at(&["abc"], 1, ("a", "bc"))?;
-        run_leaf_split_at(&["0123456"], 3, ("012", "3456"))?;
-        run_leaf_split_at(&["hello world"], 4, ("hell", "o world"))?;
+        run_split_at(&[""], 0, ("", ""))?;
+        run_split_at(&[""], 1, ("", ""))?;
+        run_split_at(&["abc"], 1, ("a", "bc"))?;
+        run_split_at(&["abc"], 7, ("abc", ""))?;
+        run_split_at(&["0123456"], 3, ("012", "3456"))?;
+        run_split_at(&["0123456"], 0, ("", "0123456"))?;
+        run_split_at(&["hello world"], 4, ("hell", "o world"))?;
+        run_split_at(&["a", "b", "c"], 2, ("ab", "c"))?;
+        run_split_at(
+            &["hello", "world", "goodbye", "mars"],
+            7,
+            ("hellowo", "rldgoodbyemars"),
+        )?;
+        run_split_at(&["", "hello", "", "", "world"], 9, ("helloworl", "d"))?;
+        run_split_at(&["goodbye", "", "ma", "rs", "", ""], 9, ("goodbyema", "rs"))?;
 
-        run_internal_split_at(&["abc"], 1, (Node::new(), Node::new()))?;
         Ok(())
     }
 }
