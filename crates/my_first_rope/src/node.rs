@@ -89,6 +89,12 @@ impl Node {
     }
 }
 
+impl Default for Node {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FromStr for Node {
     type Err = anyhow::Error;
 
@@ -107,6 +113,41 @@ impl Display for Node {
                 write!(f, "{substr}")
             }
         }
+    }
+}
+
+#[cfg(test)]
+impl TryFrom<&[&[&str]]> for Node {
+    type Error = anyhow::Error;
+
+    fn try_from(input: &[&[&str]]) -> anyhow::Result<Self> {
+        let mut node = None;
+
+        for values in input {
+            let mut child_node = None;
+
+            for value in values.iter() {
+                match child_node.take() {
+                    Some(cn) => {
+                        let temp = Node::new_internal(Arc::new(cn), Arc::new(value.parse()?));
+                        child_node = Some(temp);
+                    }
+                    None => child_node = Some(value.parse()?),
+                }
+            }
+
+            if let Some(cn) = child_node {
+                match node.take() {
+                    Some(n) => {
+                        let temp = Node::new_internal(Arc::new(n), Arc::new(cn));
+                        node = Some(temp);
+                    }
+                    None => node = Some(cn),
+                }
+            }
+        }
+
+        Ok(node.unwrap_or_default())
     }
 }
 

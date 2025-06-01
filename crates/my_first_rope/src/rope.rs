@@ -187,4 +187,28 @@ mod tests {
 
         Ok(())
     }
+
+    // --------------------------------------------
+    // fn run_split_at(
+    //     values: (&[&str], &[&str]),
+    //     index: usize,
+    //     expected: (&str, &str),
+    // ) -> anyhow::Result<()> {
+    //     let (node, _) = build_node(values)?;
+    //
+    //     let (left, right) = node.unwrap().split_at(index);
+    //     let (expected_left, expected_right) = expected;
+    //
+    //     assert_eq!(left.to_string(), expected_left.to_string());
+    //     assert_eq!(right.to_string(), expected_right.to_string());
+    //
+    //     Ok(())
+    // }
+    //
+    // #[test]
+    // fn test_split_at() -> anyhow::Result<()> {
+    //     run_split_at((&["ab", "cd"], &["ef", "gh"]), 3, ("abc", "defgh"))?;
+    //
+    //     Ok(())
+    // }
 }
