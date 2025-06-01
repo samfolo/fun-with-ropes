@@ -55,7 +55,7 @@ impl Node {
                     return (Self::new(), Self::new());
                 }
 
-                if index > substr.len() - 1 {
+                if index >= substr.len() {
                     return (substr.parse().unwrap(), Self::new());
                 }
 
