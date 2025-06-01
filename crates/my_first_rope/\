@@ -1,4 +1,8 @@
-use std::{fmt::Display, str::FromStr, sync::Arc};
+use std::{
+    fmt::Display,
+    str::FromStr,
+    sync::{Arc, Weak},
+};
 
 pub enum Node {
     Internal {
@@ -41,13 +45,13 @@ impl FromStr for Node {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self::Leaf(s.into()))
+        Ok(Self::Leaf(s.into())
     }
 }
 
 impl Display for Node {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
+        match &self.body {
             Node::Internal { left, right, .. } => {
                 write!(f, "{}{}", left, right)
             }

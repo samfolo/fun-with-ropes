@@ -1,6 +1,5 @@
-use std::{fmt::Display, str::FromStr, sync::Arc};
-
 use crate::node;
+use std::{fmt::Display, str::FromStr, sync::Arc};
 
 pub struct Rope {
     root: Arc<node::Node>,
@@ -25,6 +24,13 @@ impl Rope {
 
     pub fn is_empty(&self) -> bool {
         self.root.is_empty()
+    }
+
+    pub fn concat(&mut self, other: Rope) {
+        let left = self.root.clone();
+        let right = other.root;
+        let temp = node::Node::new_internal(left, right);
+        self.root = Arc::new(temp);
     }
 }
 
@@ -90,6 +96,30 @@ mod tests {
         run_extract_string("  spaces  ")?;
         run_extract_string("line1\nline2\ttab")?;
 
+        Ok(())
+    }
+
+    // --------------------------------------------
+    fn run_concat(s: &str, concat_list: &[&str], expected: &str) -> anyhow::Result<()> {
+        let mut rope = s.parse::<Rope>()?;
+
+        for other in concat_list {
+            rope.concat(other.parse::<Rope>()?);
+        }
+
+        assert_eq!(rope.len(), expected.len());
+        assert_eq!(format!("{rope}"), expected.to_string());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_concat() -> anyhow::Result<()> {
+        run_concat("hello ", &["world"], "hello world")?;
+        run_concat("hello", &["world"], "helloworld")?;
+        run_concat("a", &["b", "c"], "abc")?;
+        run_concat("", &["hello"], "hello")?;
+        run_concat("hello", &[""], "hello")?;
         Ok(())
     }
 }
