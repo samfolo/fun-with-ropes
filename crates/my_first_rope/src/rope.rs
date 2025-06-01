@@ -36,6 +36,19 @@ impl Rope {
     pub fn char_at(&self, index: usize) -> Option<char> {
         self.root.char_at(index)
     }
+
+    pub fn split_at(&mut self, index: usize) -> (Rope, Rope) {
+        let (left, right) = self.root.split_at(index);
+        (left.into(), right.into())
+    }
+}
+
+impl From<node::Node> for Rope {
+    fn from(node: node::Node) -> Self {
+        Self {
+            root: Arc::new(node),
+        }
+    }
 }
 
 impl FromStr for Rope {

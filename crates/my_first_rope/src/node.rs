@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, fmt::Display, str::FromStr, sync::Arc};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Node {
     Internal {
         left: Arc<Node>,
@@ -45,6 +45,28 @@ impl Node {
                 Ordering::Less => left.char_at(index),
                 _ => right.char_at(index - weight),
             },
+        }
+    }
+
+    pub fn split_at(&self, index: usize) -> (Self, Self) {
+        match self {
+            Node::Leaf(substr) => {
+                if substr.is_empty() {
+                    return (Self::new(), Self::new());
+                }
+
+                if index > substr.len() - 1 {
+                    return (substr.parse().unwrap(), Self::new());
+                }
+
+                let left = &substr[..index];
+                let right = &substr[index..];
+                (left.parse().unwrap(), right.parse().unwrap())
+            }
+            Node::Internal { left, right, .. } => {
+                //
+                (Self::new(), Self::new())
+            }
         }
     }
 }
@@ -142,6 +164,19 @@ mod tests {
         run_char_at(&["hello"], 10, None)?;
         run_char_at(&["hello", "world", "goodbye", "mars"], 25, None)?;
 
+        Ok(())
+    }
+
+    // --------------------------------------------
+    fn run_split_at(values: &[&str], index: usize, expected: (Node, Node)) -> anyhow::Result<()> {
+        let (node, _) = build_node(values)?;
+        assert_eq!(node.unwrap().split_at(index), expected);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_split_at() -> anyhow::Result<()> {
         Ok(())
     }
 }
