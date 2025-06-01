@@ -156,6 +156,7 @@ mod tests {
     use super::*;
 
     // --------------------------------------------
+    // TODO: Refactor away in favour of the test-only From<&[&[&str]]> implementation
     fn build_node(values: &[&str]) -> anyhow::Result<(Option<Node>, usize)> {
         assert!(!values.is_empty());
 
@@ -227,10 +228,14 @@ mod tests {
     }
 
     // --------------------------------------------
-    fn run_split_at(values: &[&str], index: usize, expected: (&str, &str)) -> anyhow::Result<()> {
-        let (node, _) = build_node(values)?;
+    fn run_split_at(
+        values: &[&[&str]],
+        index: usize,
+        expected: (&str, &str),
+    ) -> anyhow::Result<()> {
+        let node: Node = values.try_into()?;
 
-        let (left, right) = node.unwrap().split_at(index);
+        let (left, right) = node.split_at(index);
         let (expected_left, expected_right) = expected;
 
         assert_eq!(left.to_string(), expected_left.to_string());
@@ -241,21 +246,40 @@ mod tests {
 
     #[test]
     fn test_split_at() -> anyhow::Result<()> {
-        run_split_at(&[""], 0, ("", ""))?;
-        run_split_at(&[""], 1, ("", ""))?;
-        run_split_at(&["abc"], 1, ("a", "bc"))?;
-        run_split_at(&["abc"], 7, ("abc", ""))?;
-        run_split_at(&["0123456"], 3, ("012", "3456"))?;
-        run_split_at(&["0123456"], 0, ("", "0123456"))?;
-        run_split_at(&["hello world"], 4, ("hell", "o world"))?;
-        run_split_at(&["a", "b", "c"], 2, ("ab", "c"))?;
+        run_split_at(&[&[""]], 0, ("", ""))?;
+        run_split_at(&[&[""]], 1, ("", ""))?;
+        run_split_at(&[&["abc"]], 1, ("a", "bc"))?;
+        run_split_at(&[&["abc"]], 7, ("abc", ""))?;
+        run_split_at(&[&["0123456"]], 3, ("012", "3456"))?;
+        run_split_at(&[&["0123456"]], 0, ("", "0123456"))?;
+        run_split_at(&[&["hello world"]], 4, ("hell", "o world"))?;
+        run_split_at(&[&["a", "b", "c"]], 2, ("ab", "c"))?;
         run_split_at(
-            &["hello", "world", "goodbye", "mars"],
+            &[&["hello", "world", "goodbye", "mars"]],
             7,
             ("hellowo", "rldgoodbyemars"),
         )?;
-        run_split_at(&["", "hello", "", "", "world"], 9, ("helloworl", "d"))?;
-        run_split_at(&["goodbye", "", "ma", "rs", "", ""], 9, ("goodbyema", "rs"))?;
+        run_split_at(&[&["", "hello", "", "", "world"]], 9, ("helloworl", "d"))?;
+        run_split_at(
+            &[&["goodbye", "", "ma", "rs", "", ""]],
+            9,
+            ("goodbyema", "rs"),
+        )?;
+
+        let alphabet_tree: &[&[&str]] = &[
+            &["abc", "defg", "", "hi"],
+            &["", "j", "kl"],
+            &["mno", "p"],
+            &["qrst", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        run_split_at(alphabet_tree, 5, ("abcde", "fghijklmnopqrstuvwxyz"))?;
+        run_split_at(alphabet_tree, 7, ("abcdefg", "hijklmnopqrstuvwxyz"))?;
+        run_split_at(alphabet_tree, 16, ("abcdefghijklmnop", "qrstuvwxyz"))?;
+        run_split_at(alphabet_tree, 36, ("abcdefghijklmnopqrstuvwxyz", ""))?;
+        run_split_at(alphabet_tree, 0, ("", "abcdefghijklmnopqrstuvwxyz"))?;
 
         Ok(())
     }
