@@ -137,6 +137,10 @@ mod tests {
         run_char_at(&["", "", "goodbye", "", "mars"], 8, Some('a'))?;
         run_char_at(&["hello", "", "world", ""], 6, Some('o'))?;
 
+        run_char_at(&[""], 1, None)?;
+        run_char_at(&["hello"], 10, None)?;
+        run_char_at(&["hello", "world", "goodbye", "mars"], 25, None)?;
+
         Ok(())
     }
 }
