@@ -58,6 +58,10 @@ impl Rope {
         self.root = left.root;
         self
     }
+
+    pub fn substring(&self, start: usize, end: usize) -> String {
+        self.root.substring(start, end)
+    }
 }
 
 impl From<node::Node> for Rope {

@@ -87,6 +87,34 @@ impl Node {
             }
         }
     }
+
+    pub fn substring(&self, start: usize, end: usize) -> String {
+        match self {
+            Node::Leaf(substr) => {
+                if substr.is_empty() || start >= substr.len() {
+                    return Default::default();
+                }
+
+                if end >= substr.len() {
+                    return substr.to_owned();
+                }
+
+                String::from(&substr[start..end])
+            }
+            Node::Internal {
+                left,
+                right,
+                weight,
+            } => match start.cmp(weight) {
+                Ordering::Less | Ordering::Equal => {
+                    let left_string = left.substring(start, *weight);
+                    let right_string = right.substring(*weight, end);
+                    left_string + &right_string
+                }
+                Ordering::Greater => right.substring(start, end),
+            },
+        }
+    }
 }
 
 impl Default for Node {
@@ -280,6 +308,30 @@ mod tests {
         run_split_at(alphabet_tree, 16, ("abcdefghijklmnop", "qrstuvwxyz"))?;
         run_split_at(alphabet_tree, 36, ("abcdefghijklmnopqrstuvwxyz", ""))?;
         run_split_at(alphabet_tree, 0, ("", "abcdefghijklmnopqrstuvwxyz"))?;
+
+        Ok(())
+    }
+
+    // --------------------------------------------
+    fn run_substring(
+        values: &[&[&str]],
+        start: usize,
+        end: usize,
+        expected: &str,
+    ) -> anyhow::Result<()> {
+        let node: Node = values.try_into()?;
+        let substring = node.substring(start, end);
+        assert_eq!(substring, expected.to_string());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_substring() -> anyhow::Result<()> {
+        run_substring(&[&[""]], 0, 0, "")?;
+        run_substring(&[&[""]], 0, 5, "")?;
+        run_substring(&[&["ohellothere"]], 1, 6, "hello")?;
+        run_substring(&[&["loremipsumdolorsitamet"]], 15, 18, "sit")?;
 
         Ok(())
     }
