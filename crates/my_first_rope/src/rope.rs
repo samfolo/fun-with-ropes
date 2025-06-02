@@ -26,11 +26,12 @@ impl Rope {
         self.root.is_empty()
     }
 
-    pub fn concat(&mut self, other: Rope) {
+    pub fn concat(&mut self, other: Rope) -> &mut Self {
         let left = self.root.clone();
         let right = other.root;
         let temp = node::Node::new_internal(left, right);
         self.root = Arc::new(temp);
+        self
     }
 
     pub fn char_at(&self, index: usize) -> Option<char> {
@@ -40,6 +41,13 @@ impl Rope {
     pub fn split_at(&self, index: usize) -> (Rope, Rope) {
         let (left, right) = self.root.split_at(index);
         (left.into(), right.into())
+    }
+
+    pub fn insert_at(&mut self, index: usize, value: &str) -> anyhow::Result<&mut Self> {
+        let (mut left, right) = self.split_at(index);
+        left.concat(value.parse()?).concat(right);
+        self.root = left.root;
+        Ok(self)
     }
 }
 
@@ -205,9 +213,9 @@ mod tests {
         index: usize,
         expected: (&str, &str),
     ) -> anyhow::Result<()> {
-        let node: Rope = values.try_into()?;
+        let rope: Rope = values.try_into()?;
 
-        let (left, right) = node.split_at(index);
+        let (left, right) = rope.split_at(index);
         let (expected_left, expected_right) = expected;
 
         assert_eq!(left.to_string(), expected_left.to_string());
@@ -241,6 +249,25 @@ mod tests {
         run_split_at(alphabet_tree, 36, ("abcdefghijklmnopqrstuvwxyz", ""))?;
         run_split_at(alphabet_tree, 0, ("", "abcdefghijklmnopqrstuvwxyz"))?;
 
+        Ok(())
+    }
+
+    // --------------------------------------------
+    fn run_insert_at(
+        values: &[&[&str]],
+        index: usize,
+        to_insert: &str,
+        expected: &str,
+    ) -> anyhow::Result<()> {
+        let mut rope: Rope = values.try_into()?;
+        rope.insert_at(index, to_insert)?;
+        assert_eq!(rope.to_string(), expected.to_string());
+        Ok(())
+    }
+
+    #[test]
+    fn test_insert_at() -> anyhow::Result<()> {
+        run_insert_at(&[&[""]], 0, "hi", "hi")?;
         Ok(())
     }
 }
