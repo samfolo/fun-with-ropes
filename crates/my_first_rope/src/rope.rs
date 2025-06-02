@@ -324,6 +324,8 @@ mod tests {
         run_delete_range(&[&["hello woorld"]], (7, 8), "hello world")?;
         run_delete_range(&[&["0123456789"]], (3, 8), "01289")?;
         run_delete_range(&[&["hello"]], (1, 4), "ho")?;
+        run_delete_range(&[&["hello"]], (3, 5), "hel")?;
+        run_delete_range(&[&["hello"]], (0, 5), "")?;
 
         Ok(())
     }
