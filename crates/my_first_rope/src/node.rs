@@ -95,7 +95,7 @@ impl Node {
                     return Default::default();
                 }
 
-                if end >= substr.len() {
+                if start == 0 && end >= substr.len() {
                     return substr.to_owned();
                 }
 
@@ -332,6 +332,8 @@ mod tests {
         run_substring(&[&[""]], 0, 5, "")?;
         run_substring(&[&["ohellothere"]], 1, 6, "hello")?;
         run_substring(&[&["loremipsumdolorsitamet"]], 15, 18, "sit")?;
+        run_substring(&[&["prefix"]], 3, 6, "fix")?;
+        run_substring(&[&["postfix"]], 0, 4, "post")?;
 
         Ok(())
     }
