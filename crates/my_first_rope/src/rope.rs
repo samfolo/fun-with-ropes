@@ -321,11 +321,28 @@ mod tests {
     #[test]
     fn test_delete_range() -> anyhow::Result<()> {
         run_delete_range(&[&[""]], (0, 0), "")?;
+        run_delete_range(&[&["nochange"]], (2, 2), "nochange")?;
         run_delete_range(&[&["hello woorld"]], (7, 8), "hello world")?;
         run_delete_range(&[&["0123456789"]], (3, 8), "01289")?;
         run_delete_range(&[&["hello"]], (1, 4), "ho")?;
         run_delete_range(&[&["hello"]], (3, 5), "hel")?;
         run_delete_range(&[&["hello"]], (0, 5), "")?;
+        run_delete_range(&[&["hello"]], (3, 10), "hel")?;
+        run_delete_range(&[&["hello"]], (7, 10), "hello")?;
+        run_delete_range(&[&["hello"]], (0, 2), "llo")?;
+
+        let alphabet_tree: &[&[&str]] = &[
+            &["abc", "defg", "", "hi"],
+            &["", "j", "kl"],
+            &["mno", "p"],
+            &["qrst", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        run_delete_range(alphabet_tree, (11, 16), "abcdefghijkqrstuvwxyz")?;
+        run_delete_range(alphabet_tree, (1, 25), "az")?;
+        run_delete_range(alphabet_tree, (0, 26), "")?;
 
         Ok(())
     }
