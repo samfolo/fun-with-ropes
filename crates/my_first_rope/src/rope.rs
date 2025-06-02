@@ -308,8 +308,7 @@ mod tests {
     // --------------------------------------------
     fn run_delete_range(
         values: &[&[&str]],
-        start: usize,
-        end: usize,
+        (start, end): (usize, usize),
         expected: &str,
     ) -> anyhow::Result<()> {
         let mut rope: Rope = values.try_into()?;
@@ -321,8 +320,10 @@ mod tests {
 
     #[test]
     fn test_delete_range() -> anyhow::Result<()> {
-        run_delete_range(&[&[""]], 0, 0, "")?;
-        run_delete_range(&[&["hello woorld"]], 7, 8, "hello world")?;
+        run_delete_range(&[&[""]], (0, 0), "")?;
+        run_delete_range(&[&["hello woorld"]], (7, 8), "hello world")?;
+        run_delete_range(&[&["0123456789"]], (3, 8), "01289")?;
+        run_delete_range(&[&["hello"]], (1, 4), "ho")?;
 
         Ok(())
     }
