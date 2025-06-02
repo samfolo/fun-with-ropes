@@ -99,7 +99,7 @@ impl Node {
                     return substr.to_owned();
                 }
 
-                String::from(&substr[start..end])
+                String::from(&substr[start..end.min(substr.len())])
             }
             Node::Internal {
                 left,
@@ -334,6 +334,19 @@ mod tests {
         run_substring(&[&["loremipsumdolorsitamet"]], 15, 18, "sit")?;
         run_substring(&[&["prefix"]], 3, 6, "fix")?;
         run_substring(&[&["postfix"]], 0, 4, "post")?;
+        run_substring(&[&["hello"]], 0, 5, "hello")?;
+        run_substring(&[&["hello"]], 2, 2, "")?;
+
+        let alphabet_tree: &[&[&str]] = &[
+            &["abc", "defg", "", "hi"],
+            &["", "j", "kl"],
+            &["mno", "p"],
+            &["qrst", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        run_substring(alphabet_tree, 2, 8, "cdefgh")?;
 
         Ok(())
     }
