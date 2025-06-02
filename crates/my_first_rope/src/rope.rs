@@ -268,6 +268,13 @@ mod tests {
     #[test]
     fn test_insert_at() -> anyhow::Result<()> {
         run_insert_at(&[&[""]], 0, "hi", "hi")?;
+        run_insert_at(&[&[""]], 5, "hi", "hi")?;
+        run_insert_at(
+            &[&["hello ", "world"], &[" moon"]],
+            11,
+            " goodbye",
+            "hello world goodbye moon",
+        )?;
         Ok(())
     }
 }
