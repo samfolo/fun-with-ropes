@@ -49,6 +49,15 @@ impl Rope {
         self.root = left.root;
         Ok(self)
     }
+
+    pub fn delete_range(&mut self, start: usize, end: usize) -> &mut Self {
+        assert!(start <= end);
+        let (mut left, right) = self.split_at(start);
+        let (_, right_right) = right.split_at(end - start);
+        left.concat(right_right);
+        self.root = left.root;
+        self
+    }
 }
 
 impl From<node::Node> for Rope {
@@ -262,6 +271,7 @@ mod tests {
         let mut rope: Rope = values.try_into()?;
         rope.insert_at(index, to_insert)?;
         assert_eq!(rope.to_string(), expected.to_string());
+
         Ok(())
     }
 
@@ -291,6 +301,28 @@ mod tests {
 
         run_insert_at(alphabet_tree, 1, "_", "a_bcdefghijklmnopqrstuvwxyz")?;
         run_insert_at(alphabet_tree, 11, "@", "abcdefghijk@lmnopqrstuvwxyz")?;
+
+        Ok(())
+    }
+
+    // --------------------------------------------
+    fn run_delete_range(
+        values: &[&[&str]],
+        start: usize,
+        end: usize,
+        expected: &str,
+    ) -> anyhow::Result<()> {
+        let mut rope: Rope = values.try_into()?;
+        rope.delete_range(start, end);
+        assert_eq!(rope.to_string(), expected.to_string());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_delete_range() -> anyhow::Result<()> {
+        run_delete_range(&[&[""]], 0, 0, "")?;
+        run_delete_range(&[&["hello woorld"]], 7, 8, "hello world")?;
 
         Ok(())
     }
