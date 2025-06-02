@@ -269,12 +269,29 @@ mod tests {
     fn test_insert_at() -> anyhow::Result<()> {
         run_insert_at(&[&[""]], 0, "hi", "hi")?;
         run_insert_at(&[&[""]], 5, "hi", "hi")?;
+        run_insert_at(&[&["hello"]], 2, "XX", "heXXllo")?;
+        run_insert_at(&[&["hello"]], 0, "XX", "XXhello")?;
+        run_insert_at(&[&["hello"]], 5, "XX", "helloXX")?;
+        run_insert_at(&[&["nochange"]], 3, "", "nochange")?;
         run_insert_at(
             &[&["hello ", "world"], &[" moon"]],
             11,
             " goodbye",
             "hello world goodbye moon",
         )?;
+
+        let alphabet_tree: &[&[&str]] = &[
+            &["abc", "defg", "", "hi"],
+            &["", "j", "kl"],
+            &["mno", "p"],
+            &["qrst", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        run_insert_at(alphabet_tree, 1, "_", "a_bcdefghijklmnopqrstuvwxyz")?;
+        run_insert_at(alphabet_tree, 11, "@", "abcdefghijk@lmnopqrstuvwxyz")?;
+
         Ok(())
     }
 }
