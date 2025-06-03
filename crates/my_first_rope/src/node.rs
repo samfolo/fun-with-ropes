@@ -105,14 +105,21 @@ impl Node {
                 left,
                 right,
                 weight,
-            } => match start.cmp(weight) {
-                Ordering::Less | Ordering::Equal => {
-                    let left_string = left.substring(start, *weight);
-                    let right_string = right.substring(*weight, end);
-                    left_string + &right_string
+            } => {
+                // choose left node if start value is less than the weight, gather
+                if start <= *weight && end > *weight {
+                    let left_value = left.substring(start, *weight);
+                    let right_value = right.substring(0, end - weight);
+                    return left_value + &right_value;
+                } else if start > *weight {
+                    let value = right.substring(start - weight, end - weight);
+                    return value;
+                } else {
+                    let value = left.substring(start, end);
+                    return value;
                 }
-                Ordering::Greater => right.substring(start, end),
-            },
+                // if end value is more than the weight, choose right node and gather until limit
+            }
         }
     }
 }
@@ -347,6 +354,8 @@ mod tests {
         ];
 
         run_substring(alphabet_tree, 2, 8, "cdefgh")?;
+        run_substring(alphabet_tree, 0, 26, "abcdefghijklmnopqrstuvwxyz")?;
+        run_substring(alphabet_tree, 10, 18, "klmnopqr")?;
 
         Ok(())
     }
