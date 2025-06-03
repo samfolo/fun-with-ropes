@@ -106,19 +106,13 @@ impl Node {
                 right,
                 weight,
             } => {
-                // choose left node if start value is less than the weight, gather
                 if start <= *weight && end > *weight {
-                    let left_value = left.substring(start, *weight);
-                    let right_value = right.substring(0, end - weight);
-                    return left_value + &right_value;
+                    left.substring(start, *weight) + &right.substring(0, end - weight)
                 } else if start > *weight {
-                    let value = right.substring(start - weight, end - weight);
-                    return value;
+                    right.substring(start - weight, end - weight)
                 } else {
-                    let value = left.substring(start, end);
-                    return value;
+                    left.substring(start, end)
                 }
-                // if end value is more than the weight, choose right node and gather until limit
             }
         }
     }

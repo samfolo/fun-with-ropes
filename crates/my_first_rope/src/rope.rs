@@ -350,4 +350,45 @@ mod tests {
 
         Ok(())
     }
+
+    // --------------------------------------------
+    fn run_substring(
+        values: &[&[&str]],
+        start: usize,
+        end: usize,
+        expected: &str,
+    ) -> anyhow::Result<()> {
+        let rope: Rope = values.try_into()?;
+        let substring = rope.substring(start, end);
+        assert_eq!(substring, expected.to_string());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_substring() -> anyhow::Result<()> {
+        run_substring(&[&[""]], 0, 0, "")?;
+        run_substring(&[&[""]], 0, 5, "")?;
+        run_substring(&[&["ohellothere"]], 1, 6, "hello")?;
+        run_substring(&[&["loremipsumdolorsitamet"]], 15, 18, "sit")?;
+        run_substring(&[&["prefix"]], 3, 6, "fix")?;
+        run_substring(&[&["postfix"]], 0, 4, "post")?;
+        run_substring(&[&["hello"]], 0, 5, "hello")?;
+        run_substring(&[&["hello"]], 2, 2, "")?;
+
+        let alphabet_tree: &[&[&str]] = &[
+            &["abc", "defg", "", "hi"],
+            &["", "j", "kl"],
+            &["mno", "p"],
+            &["qrst", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        run_substring(alphabet_tree, 2, 8, "cdefgh")?;
+        run_substring(alphabet_tree, 0, 26, "abcdefghijklmnopqrstuvwxyz")?;
+        run_substring(alphabet_tree, 10, 18, "klmnopqr")?;
+
+        Ok(())
+    }
 }
