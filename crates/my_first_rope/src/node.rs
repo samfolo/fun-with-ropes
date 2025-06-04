@@ -116,6 +116,13 @@ impl Node {
             }
         }
     }
+
+    pub fn line_count(&self) -> usize {
+        match self {
+            Self::Leaf(substr) => substr.chars().filter(|c| c.eq(&'\n')).count(),
+            Self::Internal { left, right, .. } => left.line_count() + right.line_count(),
+        }
+    }
 }
 
 impl Default for Node {
@@ -351,6 +358,20 @@ mod tests {
         run_substring(alphabet_tree, 0, 26, "abcdefghijklmnopqrstuvwxyz")?;
         run_substring(alphabet_tree, 10, 18, "klmnopqr")?;
 
+        Ok(())
+    }
+
+    // --------------------------------------------
+    fn run_line_count(values: &[&[&str]], expected: usize) -> anyhow::Result<()> {
+        let node: Node = values.try_into()?;
+        assert_eq!(node.line_count(), expected);
+
+        Ok(())
+    }
+
+    #[test]
+    pub fn test_line_count() -> anyhow::Result<()> {
+        run_line_count(&[&[""]], 0)?;
         Ok(())
     }
 }
