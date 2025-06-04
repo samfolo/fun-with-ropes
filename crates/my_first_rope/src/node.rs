@@ -119,7 +119,13 @@ impl Node {
 
     pub fn line_count(&self) -> usize {
         match self {
-            Self::Leaf(substr) => substr.chars().filter(|c| c.eq(&'\n')).count(),
+            Self::Leaf(substr) => {
+                if substr.is_empty() {
+                    return 0;
+                }
+
+                1 + substr.chars().filter(|c| c.eq(&'\n')).count()
+            }
             Self::Internal { left, right, .. } => left.line_count() + right.line_count(),
         }
     }
@@ -372,6 +378,11 @@ mod tests {
     #[test]
     pub fn test_line_count() -> anyhow::Result<()> {
         run_line_count(&[&[""]], 0)?;
+        run_line_count(&[&["hello"]], 1)?;
+        run_line_count(&[&["hello\nworld"]], 2)?;
+        run_line_count(&[&["hello\nworld\ntest"]], 3)?;
+        run_line_count(&[&["hello\nwo"], &["rld"]], 2)?;
+
         Ok(())
     }
 }
