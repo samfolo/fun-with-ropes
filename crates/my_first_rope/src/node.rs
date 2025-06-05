@@ -124,9 +124,25 @@ impl Node {
                     return 0;
                 }
 
-                1 + substr.chars().filter(|c| c.eq(&'\n')).count()
+                let newline_count = substr.chars().filter(|c| c.eq(&'\n')).count();
+
+                if substr.len() == newline_count {
+                    newline_count
+                } else {
+                    newline_count + 1
+                }
             }
-            Self::Internal { left, right, .. } => left.line_count() + right.line_count(),
+            Self::Internal { left, right, .. } => {
+                if left.is_empty() {
+                    return right.line_count();
+                }
+
+                if right.is_empty() {
+                    return left.line_count();
+                }
+
+                return left.line_count() - 1 + &right.line_count();
+            }
         }
     }
 }
@@ -382,6 +398,32 @@ mod tests {
         run_line_count(&[&["hello\nworld"]], 2)?;
         run_line_count(&[&["hello\nworld\ntest"]], 3)?;
         run_line_count(&[&["hello\nwo"], &["rld"]], 2)?;
+        run_line_count(&[&["\nhello\nwo"], &["rld"]], 3)?;
+        run_line_count(&[&["a\nb\n\ncde"], &["f\ngh"]], 5)?;
+        run_line_count(&[&["\n"]], 1)?;
+        run_line_count(&[&["\n\n"]], 2)?;
+
+        let alphabet_tree_with_newlines: &[&[&str]] = &[
+            &["ab\nc", "defg\n", "", "\nhi"],
+            &["\n", "j", "kl"],
+            &["mn\n\no", "\n\np"],
+            &["qrst\n\n", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        // ab
+        // cdefg
+        //
+        // hi
+        // jklmn
+        //
+        // o
+        //
+        // pqrst
+        //
+        // uvwxyz
+        run_line_count(alphabet_tree_with_newlines, 11)?;
 
         Ok(())
     }
