@@ -7,6 +7,32 @@ struct NodeWeight {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+pub struct LineCol {
+    line: usize,
+    col: usize,
+}
+
+impl LineCol {
+    fn new() -> Self {
+        Self { line: 1, col: 0 }
+    }
+
+    pub fn line(&self) -> usize {
+        self.line
+    }
+
+    pub fn col(&self) -> usize {
+        self.col
+    }
+}
+
+impl From<(usize, usize)> for LineCol {
+    fn from((line, col): (usize, usize)) -> Self {
+        Self { line, col }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum Node {
     Internal {
         left: Arc<Node>,
@@ -139,6 +165,29 @@ impl Node {
                 newline_count + 1
             }
         }
+    }
+
+    pub fn char_to_line_col(&self, char_index: usize) -> LineCol {
+        let text = self.to_string();
+
+        if text.is_empty() {
+            return (0, 0).into();
+        }
+
+        let mut line = 1;
+        let mut col = 0;
+
+        for c in text.chars().take(char_index) {
+            match c {
+                '\n' => {
+                    line += 1;
+                    col = 0;
+                }
+                _ => col += 1,
+            };
+        }
+
+        (line, col).into()
     }
 }
 
@@ -407,18 +456,25 @@ mod tests {
             &["x", "yz"],
         ];
 
-        // ab
-        // cdefg
-        //
-        // hi
-        // jklmn
-        //
-        // o
-        //
-        // pqrst
-        //
-        // uvwxyz
         run_line_count(alphabet_tree_with_newlines, 11)?;
+
+        Ok(())
+    }
+
+    pub fn run_char_to_line_col(
+        values: &[&[&str]],
+        char_index: usize,
+        expected: (usize, usize),
+    ) -> anyhow::Result<()> {
+        let node: Node = values.try_into()?;
+        assert_eq!(node.char_to_line_col(char_index), expected.into());
+        Ok(())
+    }
+
+    #[test]
+    fn test_char_to_line_col() -> anyhow::Result<()> {
+        run_char_to_line_col(&[&[""]], 0, (0, 0))?;
+        run_char_to_line_col(&[&["test"]], 0, (1, 0))?;
 
         Ok(())
     }
