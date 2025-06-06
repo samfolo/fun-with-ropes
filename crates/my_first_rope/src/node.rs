@@ -475,6 +475,7 @@ mod tests {
     fn test_char_to_line_col() -> anyhow::Result<()> {
         run_char_to_line_col(&[&[""]], 0, (0, 0))?;
         run_char_to_line_col(&[&["test"]], 0, (1, 0))?;
+        run_char_to_line_col(&[&["hello\nthere"]], 7, (2, 1))?;
 
         Ok(())
     }
