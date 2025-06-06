@@ -1,11 +1,17 @@
 use std::{cmp::Ordering, fmt::Display, str::FromStr, sync::Arc};
 
 #[derive(Debug, PartialEq, Clone)]
+struct NodeWeight {
+    len: usize,
+    line_count: usize,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum Node {
     Internal {
         left: Arc<Node>,
         right: Arc<Node>,
-        weight: usize,
+        weight: NodeWeight,
     },
     Leaf(String),
 }
@@ -17,7 +23,10 @@ impl Node {
 
     pub fn new_internal(left: Arc<Node>, right: Arc<Node>) -> Self {
         Self::Internal {
-            weight: left.len(),
+            weight: NodeWeight {
+                len: left.len(),
+                line_count: left.line_count(),
+            },
             left,
             right,
         }
@@ -25,7 +34,7 @@ impl Node {
 
     pub fn len(&self) -> usize {
         match self {
-            Node::Internal { weight, right, .. } => weight + right.len(),
+            Node::Internal { weight, right, .. } => weight.len + right.len(),
             Node::Leaf(substr) => substr.len(),
         }
     }
@@ -41,9 +50,9 @@ impl Node {
                 left,
                 right,
                 weight,
-            } => match index.cmp(weight) {
+            } => match index.cmp(&weight.len) {
                 Ordering::Less => left.char_at(index),
-                _ => right.char_at(index - weight),
+                _ => right.char_at(index - weight.len),
             },
         }
     }
@@ -71,14 +80,14 @@ impl Node {
                 let left = Node::clone(left);
                 let right = Node::clone(right);
 
-                match index.cmp(weight) {
+                match index.cmp(&weight.len) {
                     Ordering::Less => {
                         let (left_left, left_right) = left.split_at(index);
                         let rest = Node::new_internal(Arc::new(left_right), Arc::new(right));
                         (left_left, rest)
                     }
                     Ordering::Greater => {
-                        let (right_left, right_right) = right.split_at(index - weight);
+                        let (right_left, right_right) = right.split_at(index - weight.len);
                         let rest = Node::new_internal(Arc::new(left), Arc::new(right_left));
                         (rest, right_right)
                     }
@@ -106,10 +115,10 @@ impl Node {
                 right,
                 weight,
             } => {
-                if start <= *weight && end > *weight {
-                    left.substring(start, *weight) + &right.substring(0, end - weight)
-                } else if start > *weight {
-                    right.substring(start - weight, end - weight)
+                if start <= weight.len && end > weight.len {
+                    left.substring(start, weight.len) + &right.substring(0, end - weight.len)
+                } else if start > weight.len {
+                    right.substring(start - weight.len, end - weight.len)
                 } else {
                     left.substring(start, end)
                 }
@@ -118,30 +127,16 @@ impl Node {
     }
 
     pub fn line_count(&self) -> usize {
-        match self {
-            Self::Leaf(substr) => {
-                if substr.is_empty() {
-                    return 0;
-                }
+        let s = self.to_string();
+        if s.is_empty() {
+            0
+        } else {
+            let newline_count = s.chars().filter(|c| c.eq(&'\n')).count();
 
-                let newline_count = substr.chars().filter(|c| c.eq(&'\n')).count();
-
-                if substr.len() == newline_count {
-                    newline_count
-                } else {
-                    newline_count + 1
-                }
-            }
-            Self::Internal { left, right, .. } => {
-                if left.is_empty() {
-                    return right.line_count();
-                }
-
-                if right.is_empty() {
-                    return left.line_count();
-                }
-
-                return left.line_count() - 1 + &right.line_count();
+            if s.len() == newline_count {
+                newline_count
+            } else {
+                newline_count + 1
             }
         }
     }
