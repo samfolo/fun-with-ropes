@@ -236,26 +236,45 @@ impl Node {
     }
 
     pub fn char_to_line_col(&self, char_index: usize) -> LineCol {
-        let text = self.to_string();
+        self.char_to_line_col_with_offset(char_index, 1, 0)
+    }
 
-        let mut line = 1;
-        let mut col = 0;
+    fn char_to_line_col_with_offset(
+        &self,
+        char_index: usize,
+        line_offset: usize,
+        col_offset: usize,
+    ) -> LineCol {
+        match self {
+            Self::Leaf(substr) => {
+                let mut line = line_offset;
+                let mut col = col_offset;
 
-        if text.is_empty() {
-            return (line, col).into();
-        }
-
-        for c in text.chars().take(char_index) {
-            match c {
-                '\n' => {
-                    line += 1;
-                    col = 0;
+                for c in substr.chars().take(char_index) {
+                    match c {
+                        '\n' => {
+                            line += 1;
+                            col = 0;
+                        }
+                        _ => col += 1,
+                    };
                 }
-                _ => col += 1,
-            };
+                LineCol { line, col }
+            }
+            Self::Internal {
+                left,
+                right,
+                weight,
+            } => match char_index.cmp(&weight.len) {
+                Ordering::Greater => {
+                    let LineCol { line, col } =
+                        left.char_to_line_col_with_offset(weight.len, line_offset, col_offset);
+                    let remaining_char_index = char_index.saturating_sub(weight.len);
+                    right.char_to_line_col_with_offset(remaining_char_index, line, col)
+                }
+                _ => left.char_to_line_col_with_offset(char_index, line_offset, col_offset),
+            },
         }
-
-        (line, col).into()
     }
 
     pub fn line_col_to_char(&self, location: impl CharLocation) -> Option<char> {
