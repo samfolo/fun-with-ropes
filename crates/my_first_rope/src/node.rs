@@ -226,6 +226,7 @@ impl Node {
                             return Some(ch);
                         }
                     }
+
                     return None;
                 }
             }
@@ -258,6 +259,14 @@ impl Node {
         }
 
         0
+    }
+
+    pub fn line_at(&self, line_number: usize) -> Option<String> {
+        assert!(line_number > 0, "line_number must be above zero");
+        self.to_string()
+            .lines()
+            .nth(line_number - 1)
+            .map(ToString::to_string)
     }
 }
 
@@ -656,6 +665,32 @@ mod tests {
         run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 0), 20)?;
         run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 1), 21)?;
         run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 2), 22)?;
+
+        Ok(())
+    }
+
+    // --------------------------------------------
+    fn run_line_at(
+        values: &[&[&str]],
+        line_number: usize,
+        expected: Option<String>,
+    ) -> anyhow::Result<()> {
+        let node: Node = values.try_into()?;
+        assert_eq!(node.line_at(line_number), expected);
+        Ok(())
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_line_at_panics_when_line_number_is_zero() {
+        let node = "".parse::<Node>();
+        assert!(node.is_ok());
+        node.unwrap().line_at(0);
+    }
+
+    #[test]
+    fn test_line_at() -> anyhow::Result<()> {
+        run_line_at(&[&[""]], 1, Some("".into()))?;
         Ok(())
     }
 }
