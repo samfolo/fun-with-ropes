@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, fmt::Display, str::FromStr, sync::Arc};
 
 #[derive(Debug, PartialEq, Clone)]
-struct NodeWeight {
+pub struct NodeWeight {
     len: usize,
     line_count: usize,
 }
@@ -13,10 +13,6 @@ pub struct LineCol {
 }
 
 impl LineCol {
-    fn new() -> Self {
-        Self { line: 1, col: 0 }
-    }
-
     pub fn line(&self) -> usize {
         self.line
     }
@@ -476,6 +472,8 @@ mod tests {
         run_char_to_line_col(&[&[""]], 0, (0, 0))?;
         run_char_to_line_col(&[&["test"]], 0, (1, 0))?;
         run_char_to_line_col(&[&["hello\nthere"]], 7, (2, 1))?;
+        run_char_to_line_col(&[&["\nhello"]], 0, (1, 0))?;
+        run_char_to_line_col(&[&["\nhello"]], 1, (2, 0))?;
 
         Ok(())
     }
