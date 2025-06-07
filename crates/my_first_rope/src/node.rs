@@ -693,6 +693,28 @@ mod tests {
         run_line_at(&[&[""]], 1, None)?;
         run_line_at(&[&["test"]], 1, Some("test".into()))?;
         run_line_at(&[&["café"]], 1, Some("café".into()))?;
+        run_line_at(&[&["hello\nwords"]], 1, Some("hello".into()))?;
+        run_line_at(&[&["hello\nwords"]], 2, Some("words".into()))?;
+        run_line_at(&[&["\nhello\nwords\n"]], 2, Some("hello".into()))?;
+        run_line_at(&[&["\nhello\nwords\n"]], 1, Some("".into()))?;
+        run_line_at(&[&["\nhello\nwords"]], 4, None)?;
+        run_line_at(&[&["\nhello\nwords\n"]], 4, None)?;
+        run_line_at(&[&["\nhello\nwords\n\n"]], 4, Some("".into()))?;
+
+        let alphabet_tree_with_newlines: &[&[&str]] = &[
+            &["ab\nc", "defg\n", "", "\nhi"],
+            &["\n", "j", "kl"],
+            &["mn\n\no", "\n\np"],
+            &["qrst\n\n", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        run_line_at(alphabet_tree_with_newlines, 1, Some("ab".into()))?;
+        run_line_at(alphabet_tree_with_newlines, 2, Some("cdefg".into()))?;
+        run_line_at(alphabet_tree_with_newlines, 3, Some("".into()))?;
+        run_line_at(alphabet_tree_with_newlines, 5, Some("jklmn".into()))?;
+        run_line_at(alphabet_tree_with_newlines, 20, None)?;
 
         Ok(())
     }
