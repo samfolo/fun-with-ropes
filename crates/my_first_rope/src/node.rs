@@ -692,6 +692,8 @@ mod tests {
     fn test_line_at() -> anyhow::Result<()> {
         run_line_at(&[&[""]], 1, None)?;
         run_line_at(&[&["test"]], 1, Some("test".into()))?;
+        run_line_at(&[&["café"]], 1, Some("café".into()))?;
+
         Ok(())
     }
 }
