@@ -234,10 +234,7 @@ impl Node {
         None
     }
 
-    pub fn line_col_to_char_index(
-        &self,
-        location: impl NodeLocation + PartialEq<(usize, usize)>,
-    ) -> usize {
+    pub fn line_col_to_char_index(&self, location: impl NodeLocation) -> usize {
         let text = self.to_string();
 
         if !text.is_empty() {
@@ -254,25 +251,10 @@ impl Node {
                     return global_char_index + line.len();
                 }
 
-                global_char_index += line.len();
+                global_char_index += line.chars().count();
             }
+
             return global_char_index;
-            // let mut line = 1usize;
-            // let mut col = 0usize;
-            //
-            // for c in text.chars() {
-            //     if location == (line, col) {
-            //         return Some(c);
-            //     }
-            //
-            //     match c {
-            //         '\n' => {
-            //             line += 1;
-            //             col = 0;
-            //         }
-            //         _ => col += 1,
-            //     };
-            // }
         }
 
         0
@@ -649,6 +631,10 @@ mod tests {
     #[test]
     fn test_line_col_to_char_index() -> anyhow::Result<()> {
         run_line_col_to_char_index(&[&[""]], (0, 0), 0)?;
+        run_line_col_to_char_index(&[&[""]], (1, 0), 0)?;
+        run_line_col_to_char_index(&[&["café"]], (1, 0), 0)?;
+        run_line_col_to_char_index(&[&["café"]], (1, 3), 3)?;
+        run_line_col_to_char_index(&[&["café"]], (2, 0), 4)?;
 
         Ok(())
     }
