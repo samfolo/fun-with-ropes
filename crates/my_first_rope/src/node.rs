@@ -8,7 +8,8 @@ use std::{
 #[derive(Debug, PartialEq, Clone)]
 pub struct NodeWeight {
     len: usize,
-    line_count: usize,
+    newline_count: usize,
+    ends_with_newline: bool,
 }
 
 pub trait CharLocation {
@@ -76,17 +77,38 @@ impl Node {
         Self::Internal {
             weight: NodeWeight {
                 len: left.len(),
-                line_count: left.line_count(),
+                newline_count: left.newline_count(),
+                ends_with_newline: left.ends_with_newline(),
             },
             left,
             right,
         }
     }
 
+    fn ends_with_newline(&self) -> bool {
+        match self {
+            Self::Leaf(substr) => substr.ends_with('\n'),
+            Self::Internal { left, right, .. } => {
+                if right.is_empty() {
+                    left.ends_with_newline()
+                } else {
+                    right.ends_with_newline()
+                }
+            }
+        }
+    }
+
+    fn newline_count(&self) -> usize {
+        match self {
+            Self::Leaf(substr) => substr.chars().filter(|&c| c == '\n').count(),
+            Self::Internal { right, weight, .. } => weight.newline_count + right.newline_count(),
+        }
+    }
+
     pub fn len(&self) -> usize {
         match self {
-            Node::Internal { weight, right, .. } => weight.len + right.len(),
             Node::Leaf(substr) => substr.len(),
+            Node::Internal { weight, right, .. } => weight.len + right.len(),
         }
     }
 
@@ -178,16 +200,37 @@ impl Node {
     }
 
     pub fn line_count(&self) -> usize {
-        let s = self.to_string();
-        if s.is_empty() {
-            0
-        } else {
-            let newline_count = s.chars().filter(|c| c.eq(&'\n')).count();
+        match self {
+            Self::Leaf(substr) => {
+                if substr.is_empty() {
+                    0
+                } else {
+                    let newlines = substr.chars().filter(|&c| c == '\n').count();
+                    if substr.ends_with('\n') {
+                        newlines.max(1) // A way to exclude the '\n' unless it's the only
+                    // character.
+                    } else {
+                        newlines + 1 // Else the '\n' characters are interspersed, and we can just
+                        // add 1 to represent the rest of the chunks
+                    }
+                }
+            }
+            Self::Internal {
+                left,
+                right,
+                weight,
+            } => {
+                let left_lines = left.line_count();
+                let right_lines = right.line_count();
 
-            if s.len() == newline_count {
-                newline_count
-            } else {
-                newline_count + 1
+                if weight.ends_with_newline {
+                    left_lines + right_lines
+                } else if weight.len == 0 {
+                    right_lines
+                } else {
+                    left_lines + right_lines.saturating_sub(1) // right node carries on the line of
+                    // the left node.
+                }
             }
         }
     }
