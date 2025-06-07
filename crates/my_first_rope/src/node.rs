@@ -234,20 +234,45 @@ impl Node {
         None
     }
 
-    pub fn line_col_to_char_index(&self, location: impl NodeLocation) -> usize {
+    pub fn line_col_to_char_index(
+        &self,
+        location: impl NodeLocation + PartialEq<(usize, usize)>,
+    ) -> usize {
         let text = self.to_string();
 
         if !text.is_empty() {
+            let mut global_char_index = 0usize;
+
             for (i, line) in text.split_inclusive('\n').enumerate() {
                 if location.line() == i + 1 {
                     for (char_index, _) in line.char_indices() {
                         if location.col() == char_index {
-                            return char_index;
+                            return global_char_index + char_index;
                         }
                     }
-                    return line.len();
+
+                    return global_char_index + line.len();
                 }
+
+                global_char_index += line.len();
             }
+            return global_char_index;
+            // let mut line = 1usize;
+            // let mut col = 0usize;
+            //
+            // for c in text.chars() {
+            //     if location == (line, col) {
+            //         return Some(c);
+            //     }
+            //
+            //     match c {
+            //         '\n' => {
+            //             line += 1;
+            //             col = 0;
+            //         }
+            //         _ => col += 1,
+            //     };
+            // }
         }
 
         0
@@ -606,6 +631,24 @@ mod tests {
         run_line_col_to_char(alphabet_tree_with_newlines, (6, 0), Some('o'))?;
         run_line_col_to_char(alphabet_tree_with_newlines, (6, 1), Some('\n'))?;
         run_line_col_to_char(alphabet_tree_with_newlines, (6, 2), None)?;
+
+        Ok(())
+    }
+
+    // --------------------------------------------
+    fn run_line_col_to_char_index(
+        values: &[&[&str]],
+        location: (usize, usize),
+        expected: usize,
+    ) -> anyhow::Result<()> {
+        let node: Node = values.try_into()?;
+        assert_eq!(node.line_col_to_char_index(location), expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_line_col_to_char_index() -> anyhow::Result<()> {
+        run_line_col_to_char_index(&[&[""]], (0, 0), 0)?;
 
         Ok(())
     }
