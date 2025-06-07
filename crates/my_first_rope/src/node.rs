@@ -215,32 +215,42 @@ impl Node {
         (line, col).into()
     }
 
-    pub fn line_col_to_char(
-        &self,
-        location: impl NodeLocation + PartialEq<(usize, usize)>,
-    ) -> Option<char> {
+    pub fn line_col_to_char(&self, location: impl NodeLocation) -> Option<char> {
         let text = self.to_string();
 
         if !text.is_empty() {
-            let mut line = 1usize;
-            let mut col = 0usize;
-
-            for c in text.chars() {
-                if location == (line, col) {
-                    return Some(c);
-                }
-
-                match c {
-                    '\n' => {
-                        line += 1;
-                        col = 0;
+            for (i, line) in text.split_inclusive('\n').enumerate() {
+                if location.line() == i + 1 {
+                    for (char_index, ch) in line.char_indices() {
+                        if location.col() == char_index {
+                            return Some(ch);
+                        }
                     }
-                    _ => col += 1,
-                };
+                    return None;
+                }
             }
         }
 
         None
+    }
+
+    pub fn line_col_to_char_index(&self, location: impl NodeLocation) -> usize {
+        let text = self.to_string();
+
+        if !text.is_empty() {
+            for (i, line) in text.split_inclusive('\n').enumerate() {
+                if location.line() == i + 1 {
+                    for (char_index, _) in line.char_indices() {
+                        if location.col() == char_index {
+                            return char_index;
+                        }
+                    }
+                    return line.len();
+                }
+            }
+        }
+
+        0
     }
 }
 
