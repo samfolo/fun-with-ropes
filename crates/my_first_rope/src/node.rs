@@ -167,7 +167,7 @@ impl Node {
         let text = self.to_string();
 
         if text.is_empty() {
-            return (0, 0).into();
+            return (1, 0).into();
         }
 
         let mut line = 1;
@@ -469,8 +469,8 @@ mod tests {
 
     #[test]
     fn test_char_to_line_col() -> anyhow::Result<()> {
-        run_char_to_line_col(&[&[""]], 0, (0, 0))?;
-        run_char_to_line_col(&[&[""]], 4, (0, 0))?;
+        run_char_to_line_col(&[&[""]], 0, (1, 0))?;
+        run_char_to_line_col(&[&[""]], 4, (1, 0))?;
         run_char_to_line_col(&[&["café"]], 0, (1, 0))?;
         run_char_to_line_col(&[&["café"]], 2, (1, 2))?;
         run_char_to_line_col(&[&["café"]], 8, (1, 4))?;
