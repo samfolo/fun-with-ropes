@@ -581,17 +581,6 @@ mod tests {
         run_line_col_to_char(&[&["\nhello\nthere"]], (3, 0), Some('t'))?;
         run_line_col_to_char(&[&["\n\n\n\n"]], (3, 0), Some('\n'))?;
 
-        // run_line_col_to_char(&[&[""]], 4, (1, 0))?;
-        // run_line_col_to_char(&[&["café"]], 0, (1, 0))?;
-        // run_line_col_to_char(&[&["café"]], 2, (1, 2))?;
-        // run_char_to_line_col(&[&["café"]], 8, (1, 4))?;
-        // run_char_to_line_col(&[&["hello\nthere"]], 7, (2, 1))?;
-        // run_char_to_line_col(&[&["\nhello"]], 0, (1, 0))?;
-        // run_char_to_line_col(&[&["\nhello"]], 1, (2, 0))?;
-        // run_char_to_line_col(&[&["\nhello\nfriends\n"]], 9, (3, 2))?;
-        // run_char_to_line_col(&[&["\nhello\nfriends\n"]], 13, (3, 6))?;
-        // run_char_to_line_col(&[&["\nhello\nfriends\n"]], 14, (3, 7))?;
-
         let alphabet_tree_with_newlines: &[&[&str]] = &[
             &["ab\nc", "defg\n", "", "\nhi"],
             &["n", "j", "kl"],
@@ -601,9 +590,13 @@ mod tests {
             &["x", "yz"],
         ];
 
-        // run_char_to_line_col(alphabet_tree_with_newlines, 5, (2, 2))?;
-        // run_char_to_line_col(alphabet_tree_with_newlines, 20, (7, 0))?;
-        // run_char_to_line_col(alphabet_tree_with_newlines, 35, (11, 5))?;
+        run_line_col_to_char(alphabet_tree_with_newlines, (2, 1), Some('d'))?;
+        run_line_col_to_char(alphabet_tree_with_newlines, (4, 3), Some('j'))?;
+        run_line_col_to_char(alphabet_tree_with_newlines, (10, 2), Some('w'))?;
+        run_line_col_to_char(alphabet_tree_with_newlines, (6, 0), Some('o'))?;
+        run_line_col_to_char(alphabet_tree_with_newlines, (6, 1), Some('\n'))?;
+        run_line_col_to_char(alphabet_tree_with_newlines, (6, 2), None)?;
+
         Ok(())
     }
 }
