@@ -474,6 +474,7 @@ mod tests {
         run_char_to_line_col(&[&["hello\nthere"]], 7, (2, 1))?;
         run_char_to_line_col(&[&["\nhello"]], 0, (1, 0))?;
         run_char_to_line_col(&[&["\nhello"]], 1, (2, 0))?;
+        run_char_to_line_col(&[&["\nhello\nfriends\n"]], 9, (2, 2))?;
 
         Ok(())
     }
