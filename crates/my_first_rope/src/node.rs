@@ -470,11 +470,29 @@ mod tests {
     #[test]
     fn test_char_to_line_col() -> anyhow::Result<()> {
         run_char_to_line_col(&[&[""]], 0, (0, 0))?;
+        run_char_to_line_col(&[&[""]], 4, (0, 0))?;
         run_char_to_line_col(&[&["test"]], 0, (1, 0))?;
+        run_char_to_line_col(&[&["test"]], 2, (1, 2))?;
+        run_char_to_line_col(&[&["test"]], 8, (1, 4))?;
         run_char_to_line_col(&[&["hello\nthere"]], 7, (2, 1))?;
         run_char_to_line_col(&[&["\nhello"]], 0, (1, 0))?;
         run_char_to_line_col(&[&["\nhello"]], 1, (2, 0))?;
-        run_char_to_line_col(&[&["\nhello\nfriends\n"]], 9, (2, 2))?;
+        run_char_to_line_col(&[&["\nhello\nfriends\n"]], 9, (3, 2))?;
+        run_char_to_line_col(&[&["\nhello\nfriends\n"]], 13, (3, 6))?;
+        run_char_to_line_col(&[&["\nhello\nfriends\n"]], 14, (3, 7))?;
+
+        let alphabet_tree_with_newlines: &[&[&str]] = &[
+            &["ab\nc", "defg\n", "", "\nhi"],
+            &["\n", "j", "kl"],
+            &["mn\n\no", "\n\np"],
+            &["qrst\n\n", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        run_char_to_line_col(alphabet_tree_with_newlines, 5, (2, 2))?;
+        run_char_to_line_col(alphabet_tree_with_newlines, 20, (7, 0))?;
+        run_char_to_line_col(alphabet_tree_with_newlines, 35, (11, 5))?;
 
         Ok(())
     }
