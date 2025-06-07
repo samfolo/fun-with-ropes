@@ -1,4 +1,9 @@
-use std::{cmp::Ordering, fmt::Display, str::FromStr, sync::Arc};
+use std::{
+    cmp::{Ordering, PartialEq},
+    fmt::Display,
+    str::FromStr,
+    sync::Arc,
+};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct NodeWeight {
@@ -6,25 +11,49 @@ pub struct NodeWeight {
     line_count: usize,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+pub trait NodeLocation {
+    fn line(&self) -> usize;
+    fn col(&self) -> usize;
+}
+
+#[derive(Debug, Clone)]
 pub struct LineCol {
     line: usize,
     col: usize,
 }
 
-impl LineCol {
-    pub fn line(&self) -> usize {
+impl NodeLocation for LineCol {
+    fn line(&self) -> usize {
         self.line
     }
 
-    pub fn col(&self) -> usize {
+    fn col(&self) -> usize {
         self.col
+    }
+}
+
+impl<Loc> PartialEq<Loc> for LineCol
+where
+    Loc: NodeLocation,
+{
+    fn eq(&self, other: &Loc) -> bool {
+        self.line() == other.line() && self.col() == other.col()
     }
 }
 
 impl From<(usize, usize)> for LineCol {
     fn from((line, col): (usize, usize)) -> Self {
         Self { line, col }
+    }
+}
+
+impl NodeLocation for (usize, usize) {
+    fn line(&self) -> usize {
+        self.0
+    }
+
+    fn col(&self) -> usize {
+        self.1
     }
 }
 
@@ -166,12 +195,12 @@ impl Node {
     pub fn char_to_line_col(&self, char_index: usize) -> LineCol {
         let text = self.to_string();
 
-        if text.is_empty() {
-            return (1, 0).into();
-        }
-
         let mut line = 1;
         let mut col = 0;
+
+        if text.is_empty() {
+            return (line, col).into();
+        }
 
         for c in text.chars().take(char_index) {
             match c {
@@ -184,6 +213,34 @@ impl Node {
         }
 
         (line, col).into()
+    }
+
+    pub fn line_col_to_char(
+        &self,
+        location: impl NodeLocation + PartialEq<(usize, usize)>,
+    ) -> Option<char> {
+        let text = self.to_string();
+
+        if !text.is_empty() {
+            let mut line = 1usize;
+            let mut col = 0usize;
+
+            for c in text.chars() {
+                if location == (line, col) {
+                    return Some(c);
+                }
+
+                match c {
+                    '\n' => {
+                        line += 1;
+                        col = 0;
+                    }
+                    _ => col += 1,
+                };
+            }
+        }
+
+        None
     }
 }
 
@@ -457,13 +514,15 @@ mod tests {
         Ok(())
     }
 
+    // --------------------------------------------
     pub fn run_char_to_line_col(
         values: &[&[&str]],
         char_index: usize,
         expected: (usize, usize),
     ) -> anyhow::Result<()> {
         let node: Node = values.try_into()?;
-        assert_eq!(node.char_to_line_col(char_index), expected.into());
+        let expected: LineCol = expected.into();
+        assert_eq!(node.char_to_line_col(char_index), expected);
         Ok(())
     }
 
@@ -491,9 +550,60 @@ mod tests {
         ];
 
         run_char_to_line_col(alphabet_tree_with_newlines, 5, (2, 2))?;
+        run_char_to_line_col(alphabet_tree_with_newlines, 19, (6, 0))?;
         run_char_to_line_col(alphabet_tree_with_newlines, 20, (7, 0))?;
         run_char_to_line_col(alphabet_tree_with_newlines, 35, (11, 5))?;
 
+        Ok(())
+    }
+
+    // --------------------------------------------
+    fn run_line_col_to_char(
+        values: &[&[&str]],
+        location: (usize, usize),
+        expected: Option<char>,
+    ) -> anyhow::Result<()> {
+        let node: Node = values.try_into()?;
+        assert_eq!(node.line_col_to_char(location), expected);
+        Ok(())
+    }
+
+    #[test]
+    fn test_line_col_to_char() -> anyhow::Result<()> {
+        run_line_col_to_char(&[&[""]], (0, 0), None)?;
+        run_line_col_to_char(&[&[""]], (1, 0), None)?;
+        run_line_col_to_char(&[&["café"]], (1, 0), Some('c'))?;
+        run_line_col_to_char(&[&["café"]], (1, 3), Some('é'))?;
+        run_line_col_to_char(&[&["café"]], (2, 0), None)?;
+        run_line_col_to_char(&[&["hello\nthere"]], (1, 3), Some('l'))?;
+        run_line_col_to_char(&[&["hello\nthere"]], (1, 5), Some('\n'))?;
+        run_line_col_to_char(&[&["hello\nthere"]], (2, 1), Some('h'))?;
+        run_line_col_to_char(&[&["\nhello\nthere"]], (3, 0), Some('t'))?;
+        run_line_col_to_char(&[&["\n\n\n\n"]], (3, 0), Some('\n'))?;
+
+        // run_line_col_to_char(&[&[""]], 4, (1, 0))?;
+        // run_line_col_to_char(&[&["café"]], 0, (1, 0))?;
+        // run_line_col_to_char(&[&["café"]], 2, (1, 2))?;
+        // run_char_to_line_col(&[&["café"]], 8, (1, 4))?;
+        // run_char_to_line_col(&[&["hello\nthere"]], 7, (2, 1))?;
+        // run_char_to_line_col(&[&["\nhello"]], 0, (1, 0))?;
+        // run_char_to_line_col(&[&["\nhello"]], 1, (2, 0))?;
+        // run_char_to_line_col(&[&["\nhello\nfriends\n"]], 9, (3, 2))?;
+        // run_char_to_line_col(&[&["\nhello\nfriends\n"]], 13, (3, 6))?;
+        // run_char_to_line_col(&[&["\nhello\nfriends\n"]], 14, (3, 7))?;
+
+        let alphabet_tree_with_newlines: &[&[&str]] = &[
+            &["ab\nc", "defg\n", "", "\nhi"],
+            &["n", "j", "kl"],
+            &["mn\n\no", "\n\np"],
+            &["qrst\n\n", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        // run_char_to_line_col(alphabet_tree_with_newlines, 5, (2, 2))?;
+        // run_char_to_line_col(alphabet_tree_with_newlines, 20, (7, 0))?;
+        // run_char_to_line_col(alphabet_tree_with_newlines, 35, (11, 5))?;
         Ok(())
     }
 }
