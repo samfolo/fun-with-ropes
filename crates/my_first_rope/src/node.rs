@@ -471,9 +471,9 @@ mod tests {
     fn test_char_to_line_col() -> anyhow::Result<()> {
         run_char_to_line_col(&[&[""]], 0, (0, 0))?;
         run_char_to_line_col(&[&[""]], 4, (0, 0))?;
-        run_char_to_line_col(&[&["test"]], 0, (1, 0))?;
-        run_char_to_line_col(&[&["test"]], 2, (1, 2))?;
-        run_char_to_line_col(&[&["test"]], 8, (1, 4))?;
+        run_char_to_line_col(&[&["café"]], 0, (1, 0))?;
+        run_char_to_line_col(&[&["café"]], 2, (1, 2))?;
+        run_char_to_line_col(&[&["café"]], 8, (1, 4))?;
         run_char_to_line_col(&[&["hello\nthere"]], 7, (2, 1))?;
         run_char_to_line_col(&[&["\nhello"]], 0, (1, 0))?;
         run_char_to_line_col(&[&["\nhello"]], 1, (2, 0))?;
