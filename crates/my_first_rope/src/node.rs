@@ -683,14 +683,15 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_line_at_panics_when_line_number_is_zero() {
-        let node = "".parse::<Node>();
+        let node = "irrelevant value".parse::<Node>();
         assert!(node.is_ok());
         node.unwrap().line_at(0);
     }
 
     #[test]
     fn test_line_at() -> anyhow::Result<()> {
-        run_line_at(&[&[""]], 1, Some("".into()))?;
+        run_line_at(&[&[""]], 1, None)?;
+        run_line_at(&[&["test"]], 1, Some("test".into()))?;
         Ok(())
     }
 }
