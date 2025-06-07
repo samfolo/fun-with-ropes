@@ -635,7 +635,27 @@ mod tests {
         run_line_col_to_char_index(&[&["café"]], (1, 0), 0)?;
         run_line_col_to_char_index(&[&["café"]], (1, 3), 3)?;
         run_line_col_to_char_index(&[&["café"]], (2, 0), 4)?;
+        run_line_col_to_char_index(&[&["hello\nthere"]], (1, 3), 3)?;
+        run_line_col_to_char_index(&[&["hello\nthere"]], (1, 5), 5)?;
+        run_line_col_to_char_index(&[&["hello\nthere"]], (2, 1), 7)?;
+        run_line_col_to_char_index(&[&["\nhello\nthere"]], (3, 0), 7)?;
+        run_line_col_to_char_index(&[&["\n\n\n\n"]], (3, 0), 2)?;
 
+        let alphabet_tree_with_newlines: &[&[&str]] = &[
+            &["ab\nc", "defg\n", "", "\nhi"],
+            &["n", "j", "kl"],
+            &["mn\n\no", "\n\np"],
+            &["qrst\n\n", "uv", "w", ""],
+            &[],
+            &["x", "yz"],
+        ];
+
+        // run_line_col_to_char_index(alphabet_tree_with_newlines, (2, 1), 0)?;
+        // run_line_col_to_char_index(alphabet_tree_with_newlines, (4, 3), 0)?;
+        // run_line_col_to_char_index(alphabet_tree_with_newlines, (10, 2), 0)?;
+        // run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 0), 0)?;
+        // run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 1), 0)?;
+        // run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 2), 0)?;
         Ok(())
     }
 }
