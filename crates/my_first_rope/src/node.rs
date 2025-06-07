@@ -650,12 +650,12 @@ mod tests {
             &["x", "yz"],
         ];
 
-        // run_line_col_to_char_index(alphabet_tree_with_newlines, (2, 1), 0)?;
-        // run_line_col_to_char_index(alphabet_tree_with_newlines, (4, 3), 0)?;
-        // run_line_col_to_char_index(alphabet_tree_with_newlines, (10, 2), 0)?;
-        // run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 0), 0)?;
-        // run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 1), 0)?;
-        // run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 2), 0)?;
+        run_line_col_to_char_index(alphabet_tree_with_newlines, (2, 1), 4)?;
+        run_line_col_to_char_index(alphabet_tree_with_newlines, (4, 3), 13)?;
+        run_line_col_to_char_index(alphabet_tree_with_newlines, (10, 2), 32)?;
+        run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 0), 20)?;
+        run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 1), 21)?;
+        run_line_col_to_char_index(alphabet_tree_with_newlines, (6, 2), 22)?;
         Ok(())
     }
 }
