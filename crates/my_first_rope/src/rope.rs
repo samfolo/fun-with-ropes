@@ -1,6 +1,8 @@
 use crate::node;
 use std::{fmt::Display, str::FromStr, sync::Arc};
 
+pub use node::{CharLocation, LineCol};
+
 pub struct Rope {
     root: Arc<node::Node>,
 }
@@ -61,6 +63,26 @@ impl Rope {
 
     pub fn substring(&self, start: usize, end: usize) -> String {
         self.root.substring(start, end)
+    }
+
+    pub fn line_count(&self) -> usize {
+        self.root.line_count()
+    }
+
+    pub fn char_to_line_col(&self, char_index: usize) -> LineCol {
+        self.root.char_to_line_col(char_index)
+    }
+
+    pub fn line_col_to_char(&self, location: impl node::CharLocation) -> Option<char> {
+        self.root.line_col_to_char(location)
+    }
+
+    pub fn line_col_to_char_index(&self, location: impl node::CharLocation) -> usize {
+        self.root.line_col_to_char_index(location)
+    }
+
+    pub fn line_at(&self, line_number: usize) -> Option<String> {
+        self.root.line_at(line_number)
     }
 }
 

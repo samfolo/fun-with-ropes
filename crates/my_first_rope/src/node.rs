@@ -11,7 +11,7 @@ pub struct NodeWeight {
     line_count: usize,
 }
 
-pub trait NodeLocation {
+pub trait CharLocation {
     fn line(&self) -> usize;
     fn col(&self) -> usize;
 }
@@ -22,7 +22,7 @@ pub struct LineCol {
     col: usize,
 }
 
-impl NodeLocation for LineCol {
+impl CharLocation for LineCol {
     fn line(&self) -> usize {
         self.line
     }
@@ -34,7 +34,7 @@ impl NodeLocation for LineCol {
 
 impl<Loc> PartialEq<Loc> for LineCol
 where
-    Loc: NodeLocation,
+    Loc: CharLocation,
 {
     fn eq(&self, other: &Loc) -> bool {
         self.line() == other.line() && self.col() == other.col()
@@ -47,7 +47,7 @@ impl From<(usize, usize)> for LineCol {
     }
 }
 
-impl NodeLocation for (usize, usize) {
+impl CharLocation for (usize, usize) {
     fn line(&self) -> usize {
         self.0
     }
@@ -215,7 +215,7 @@ impl Node {
         (line, col).into()
     }
 
-    pub fn line_col_to_char(&self, location: impl NodeLocation) -> Option<char> {
+    pub fn line_col_to_char(&self, location: impl CharLocation) -> Option<char> {
         let text = self.to_string();
 
         if !text.is_empty() {
@@ -235,7 +235,7 @@ impl Node {
         None
     }
 
-    pub fn line_col_to_char_index(&self, location: impl NodeLocation) -> usize {
+    pub fn line_col_to_char_index(&self, location: impl CharLocation) -> usize {
         let text = self.to_string();
 
         if !text.is_empty() {
